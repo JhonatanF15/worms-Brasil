@@ -1,0 +1,100 @@
+/* Estilos gerais do jogo */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #222;
+    font-family: 'Press Start 2P', cursive;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    border: 2px solid white; /* Borda para depuração, pode ser removida */
+}
+
+/* Estilos do painel inicial */
+.start-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    z-index: 10;
+}
+
+.start-panel h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.start-panel label {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.start-panel input {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    padding: 10px;
+    width: 200px;
+    margin-bottom: 20px;
+    background-color: #333;
+    color: white;
+    border: 2px solid white;
+    text-align: center;
+}
+
+.start-panel p {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.color-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.color-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-btn.selected {
+    border-color: yellow;
+}
+
+#startButton {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    padding: 10px 20px;
+    background-color: #00FF00;
+    color: black;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#startButton:hover {
+    background-color: #00CC00;
+}
+
+.hidden {
+    display: none;
+}
