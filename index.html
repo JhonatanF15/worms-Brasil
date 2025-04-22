@@ -3,28 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo Estilo Worms Zone</title>
+    <title>WARZONE BRASIL</title>
     <link rel="stylesheet" href="style.css">
     <!-- Fonte pixelada para o contador e painel -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="startPanel" class="start-panel">
-        <h1>Jogo Estilo Worms Zone</h1>
-        <label for="playerName">Nome da Minhoca:</label>
-        <input type="text" id="playerName" maxlength="15" placeholder="Jogador">
-        <p>Escolha a Cor:</p>
-        <div class="color-options">
-            <button class="color-btn" data-color="#00FF00" style="background-color: #00FF00;"></button>
-            <button class="color-btn" data-color="#FF0000" style="background-color: #FF0000;"></button>
-            <button class="color-btn" data-color="#0000FF" style="background-color: #0000FF;"></button>
-            <button class="color-btn" data-color="#FFFF00" style="background-color: #FFFF00;"></button>
-            <button class="color-btn" data-color="#FF00FF" style="background-color: #FF00FF;"></button>
-            <button class="color-btn" data-color="#00FFFF" style="background-color: #00FFFF;"></button>
+        <h1>WARZONE BRASIL</h1>
+        <div id="highScoresPanel" class="high-scores-panel">
+            <h2>TOP 3 PLACARES</h2>
+            <ol id="highScoresList"></ol>
         </div>
-        <button id="startButton">Iniciar Jogo</button>
+        <form id="startForm" autocomplete="off" onsubmit="return false;">
+            <div class="form-group">
+                <label for="playerName">NOME:</label>
+                <input type="text" id="playerName" maxlength="15" placeholder="Sobrevivente" autocomplete="off">
+            </div>
+            <p>Escolha a Cor:</p>
+            <div class="color-options">
+                <button class="color-btn" data-color="#00FF00" style="background-color: #00FF00;"></button>
+                <button class="color-btn" data-color="#FF0000" style="background-color: #FF0000;"></button>
+                <button class="color-btn" data-color="#0000FF" style="background-color: #0000FF;"></button>
+                <button class="color-btn" data-color="#FFFF00" style="background-color: #FFFF00;"></button>
+                <button class="color-btn" data-color="#FF00FF" style="background-color: #FF00FF;"></button>
+                <button class="color-btn" data-color="#00FFFF" style="background-color: #00FFFF;"></button>
+            </div>
+            <button id="startButton">Iniciar Jogo</button>
+        </form>
     </div>
     <canvas id="gameCanvas" tabindex="0"></canvas>
+    <button id="fullscreenBtn" class="fullscreen-button" aria-label="Tela Cheia">&#x26F6;</button> <!-- Botão de Tela Cheia -->
     <script src="script.js" defer></script>
 </body>
 </html>

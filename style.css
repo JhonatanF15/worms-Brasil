@@ -1,10 +1,12 @@
 /* Estilos gerais do jogo */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+
 body {
     margin: 0;
     padding: 0;
     overflow: hidden;
     background-color: #222;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Orbitron', 'Press Start 2P', cursive;
 }
 
 #gameCanvas {
@@ -15,40 +17,80 @@ body {
 }
 
 /* Estilos do painel inicial */
+.high-scores-panel {
+    background: rgba(255,255,255,0.10);
+    border: 2px solid #00ffff;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    padding: 1.2rem 0.6rem 1.2rem 0.6rem;
+    color: #fff;
+    box-shadow: 0 0 8px #00ffff44;
+}
+
+.high-scores-panel h2 {
+    color: #00ffff;
+    font-size: 1.2rem;
+    margin-bottom: 0.7rem;
+    text-shadow: 0 0 8px #00ffff99;
+}
+
+.high-scores-panel ol {
+    list-style: decimal inside;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    font-family: 'Press Start 2P', 'Orbitron', monospace;
+    font-size: 1rem;
+}
+
+.high-scores-panel li {
+    color: #fff;
+    background: rgba(0,0,0,0.35);
+    margin: 0.2em 0;
+    padding: 0.3em 0.7em;
+    border-radius: 6px;
+    text-shadow: 0 1px 2px #000;
+    letter-spacing: 1px;
+}
+
 .start-panel {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.9);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    z-index: 10;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 3rem;
+    border-radius: 15px;
+    border: 3px solid #555;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 500px;
+    font-family: 'Orbitron', sans-serif; /* Fonte específica para o painel */
 }
 
 .start-panel h1 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    text-align: center;
+    font-size: 2.5rem;
+    color: #00ffff; /* Azul Ciano Neon */
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    margin-bottom: 1.5rem;
+    font-family: 'Orbitron', cursive; /* Manter Orbitron */
 }
 
 .start-panel label {
     font-size: 16px;
     margin-bottom: 10px;
+    font-family: 'Orbitron', sans-serif; /* Manter Orbitron */
+    color: #bbb; /* Cor cinza claro para o label */
 }
 
 .start-panel input {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Orbitron', cursive;
     font-size: 14px;
     padding: 10px;
     width: 200px;
     margin-bottom: 20px;
     background-color: #333;
-    color: white;
     border: 2px solid white;
     text-align: center;
 }
@@ -56,10 +98,13 @@ body {
 .start-panel p {
     font-size: 16px;
     margin-bottom: 10px;
+    color: #fff !important;
+    text-shadow: 0 1px 2px #000;
 }
 
 .color-options {
     display: flex;
+    justify-content: center; /* Centralizar botões */
     gap: 10px;
     margin-bottom: 20px;
 }
@@ -81,14 +126,33 @@ body {
 }
 
 #startButton {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 16px;
-    padding: 10px 20px;
+    font-family: 'Orbitron', cursive;
+    font-size: 22px;
+    padding: 16px 36px;
     background-color: #00FF00;
-    color: black;
-    border: 2px solid white;
+    color: #111;
+    border: 3px solid #00ffff;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    box-shadow: 0 0 16px #00ffb3, 0 0 4px #fff;
+    text-shadow: 0 2px 10px #00ffb3, 0 1px 2px #fff;
+    font-weight: bold;
+    letter-spacing: 2px;
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    outline: none;
+}
+
+#startButton:hover, #startButton:focus {
+    background-color: #00ffb3;
+    color: #111;
+    box-shadow: 0 0 32px #00ffff, 0 0 10px #fff;
+    transform: scale(1.07);
+    animation: pulseStartBtn 0.7s infinite alternate;
+}
+
+@keyframes pulseStartBtn {
+    0% { box-shadow: 0 0 16px #00ffb3, 0 0 4px #fff; }
+    100% { box-shadow: 0 0 32px #00ffff, 0 0 16px #fff; }
 }
 
 #startButton:hover {
@@ -97,4 +161,59 @@ body {
 
 .hidden {
     display: none;
+}
+
+/* Cor específica para o input de nome */
+#playerName {
+    color: #fff !important; /* Forçar a cor branca */
+}
+
+/* Estilo para o placeholder */
+#playerName::placeholder {
+    color: #bbb; /* Cor cinza claro para o placeholder */
+    opacity: 1; /* Garante que a cor seja visível em alguns navegadores */
+}
+
+/* Estilos para o botão de tela cheia */
+.fullscreen-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 100; /* Garante que fique sobre o canvas */
+    transition: background-color 0.2s;
+}
+
+.fullscreen-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Estilo para os textos do placar */
+.score-text {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Efeito de destaque para o jogador */
+.player-score {
+    text-shadow: 0 0 10px currentColor;
+    font-size: 1.1em;
+}
+
+/* Container do placar (opcional) */
+.score-container {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
 }

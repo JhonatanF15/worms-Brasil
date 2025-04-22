@@ -2,10 +2,11 @@
 const GameConfig = {
     WORLD_WIDTH: 3000,
     WORLD_HEIGHT: 3000,
-    PLAYER_SPEED: 100,
-    PLAYER_BOOST_SPEED: 150,
-    RIVAL_SPEED: 100,
+    PLAYER_SPEED: 50,
+    PLAYER_BOOST_SPEED: 100,
+    RIVAL_SPEED: 70,
     SNAKE_SEGMENT_RADIUS: 9,
+    MAX_SNAKE_RADIUS: 9 * 2.5, // Raio máximo = 2.5x o inicial
     SNAKE_TURN_SPEED: Math.PI * 2.0, // Curvas suaves
     FOOD_RADIUS: 7,
     INITIAL_FOOD_COUNT: 450,
@@ -16,13 +17,25 @@ const GameConfig = {
     BOUNDS_THICKNESS: 190,
     INITIAL_SNAKE_LENGTH: 30,
     CAMERA_SMOOTHING: 0.2,
-    RIVAL_COUNT: 10,
+    RIVAL_COUNT: 100,
     RESPAWN_DELAY: 3, // 3 segundos para reaparecer
+    RIVAL_NAMES: [
+        'NEGODRAMA', // Sempre presente
+        'Kananda', 'Runer', 'Zaya', 'Kraken',
+        'Elvis', 'RAIO', 'TROVÃO', 'FURIA',
+        'VENENO', 'TEMPESTADE', 'LENDA', 'MITO'
+    ],
 };
+
+const GRID_SIZE = 100;
+// High Scores (Top 3)
+const HIGH_SCORES_KEY = 'highScoresMeuJogo';
+let highScores = [];
 
 // Estado do jogo
 let GameState = {
     playerSnake: null,
+    playerDeathCount: 0,
     rivals: [],
     food: [],
     camera: {
@@ -35,6 +48,8 @@ let GameState = {
     mousePos: { x: 0, y: 0 },
     isMouseDown: false,
     isRunning: true,
+    spatialGrid: {}, // Grid espacial para colisão
+
     lastTimestamp: 0,
     foodSpawnTimer: 0,
 };
@@ -93,7 +108,9 @@ function createSnake(isPlayer = false, name = null, color = null) {
     }
     const snake = {
         id: generateUniqueId(),
-        name: isPlayer ? (name || 'Jogador') : (name || `Rival ${GameState.rivals.length + 1}`),
+        name: isPlayer 
+            ? (name || 'Jogador') 
+            : (name || GameConfig.RIVAL_NAMES[Math.floor(Math.random() * (GameConfig.RIVAL_NAMES.length - 1)) + 1]),
         color: isPlayer ? (color || '#00FF00') : (color || getRandomColor(['#FF0000', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'])),
         score: 0,
         isAlive: true,
@@ -104,6 +121,7 @@ function createSnake(isPlayer = false, name = null, color = null) {
         angle: angle,
         targetAngle: angle,
         targetLength: GameConfig.INITIAL_SNAKE_LENGTH,
+        spawnTime: performance.now(), // tempo de criação para imunidade
     };
     console.log(`Criada cobra ${snake.name} com ID ${snake.id}, cor ${snake.color}`);
     return snake;
@@ -117,6 +135,37 @@ function createPlayerSnake(name, color) {
     GameState.camera.x = head.x;
     GameState.camera.y = head.y;
     console.log('Jogador inicializado:', GameState.playerSnake);
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function createRivals() {
+    GameState.rivals = [];
+    // Sempre garantir NEGODRAMA e KANANDA
+    const fixedNames = ['NEGODRAMA', 'KANANDA'];
+    // Remove nomes fixos da lista (case-insensitive)
+    const allNames = GameConfig.RIVAL_NAMES.filter(
+        n => !fixedNames.includes(n.toUpperCase())
+    );
+    // Embaralha os nomes restantes
+    const shuffled = shuffleArray([...allNames]);
+    // Monta a lista final de nomes únicos
+    const namesPool = [...fixedNames, ...shuffled];
+    for (let i = 0; i < GameConfig.RIVAL_COUNT; i++) {
+        let rivalName;
+        if (i < namesPool.length) {
+            rivalName = namesPool[i];
+        } else {
+            rivalName = `Rival ${i + 1}`;
+        }
+        GameState.rivals.push(createSnake(false, rivalName));
+    }
 }
 
 // Atualização de entidades
@@ -174,10 +223,13 @@ function updatePlayerSnake(deltaTime) {
         const distToFood = distance(head.x, head.y, foodItem.x, foodItem.y);
         if (distToFood < snake.radius + foodItem.radius) {
             GameState.food.splice(i, 1);
-            snake.targetLength++;
+            snake.targetLength += 5; // Aumenta o tamanho em 2
             snake.score++;
+            // Aumenta o raio (engorda) até um máximo
+            const radiusIncrease = 0.05;
+            snake.radius = Math.min(snake.radius + radiusIncrease, GameConfig.MAX_SNAKE_RADIUS);
             createFood(1);
-            console.log(`${snake.name} coletou comida. Pontuação: ${snake.score}`);
+            console.log(`${snake.name} coletou comida. Pontuação: ${snake.score}, Raio: ${snake.radius.toFixed(2)}`);
         }
     }
 }
@@ -236,10 +288,13 @@ function updateRivalSnake(rival, deltaTime) {
         const distToFood = distance(head.x, head.y, foodItem.x, foodItem.y);
         if (distToFood < rival.radius + foodItem.radius) {
             GameState.food.splice(i, 1);
-            rival.targetLength++;
+            rival.targetLength += 2; // Aumenta o tamanho em 2
             rival.score++;
+            // Aumenta o raio (engorda) até um máximo
+            const radiusIncrease = 0.05;
+            rival.radius = Math.min(rival.radius + radiusIncrease, GameConfig.MAX_SNAKE_RADIUS);
             createFood(1);
-            console.log(`${rival.name} coletou comida. Pontuação: ${rival.score}`);
+            console.log(`${rival.name} coletou comida. Pontuação: ${rival.score}, Raio: ${rival.radius.toFixed(2)}`);
         }
     }
 }
@@ -249,6 +304,7 @@ function respawnSnake(snake) {
     snake.deathTime = null;
     snake.score = 0;
     snake.targetLength = GameConfig.INITIAL_SNAKE_LENGTH;
+    snake.radius = GameConfig.SNAKE_SEGMENT_RADIUS; // Reseta o raio para o inicial
     snake.segments = [];
     const startX = getRandomInt(snake.radius, GameConfig.WORLD_WIDTH - snake.radius);
     const startY = getRandomInt(snake.radius, GameConfig.WORLD_HEIGHT - snake.radius);
@@ -261,6 +317,7 @@ function respawnSnake(snake) {
     }
     snake.angle = angle;
     snake.targetAngle = angle;
+    snake.spawnTime = performance.now(); // tempo de respawn para imunidade
     if (snake === GameState.playerSnake) {
         const head = snake.segments[0];
         GameState.camera.targetX = head.x;
@@ -274,6 +331,8 @@ function respawnSnake(snake) {
 // Colisões
 function checkBoundsCollision(snake, currentTime) {
     if (!snake || !snake.isAlive) return;
+    // imunidade nos primeiros 2s após spawn
+    if (performance.now() < (snake.spawnTime || 0) + 2000) return;
 
     const head = snake.segments[0];
     let collided = false;
@@ -288,56 +347,98 @@ function checkBoundsCollision(snake, currentTime) {
     }
 
     if (collided) {
+        dropFoodOnDeath(snake); // Dropa comida baseada na pontuação ANTES de zerar
+        // Salva score antes de zerar
+        if (snake === GameState.playerSnake) snake.lastScoreBeforeDeath = snake.score;
         snake.isAlive = false;
         snake.deathTime = currentTime;
-        snake.score = 0;
-        for (let i = 1; i < snake.segments.length; i += Math.floor(snake.segments.length / 3)) {
-            const segment = snake.segments[i];
-            GameState.food.push({
-                x: segment.x + getRandomInt(-10, 10),
-                y: segment.y + getRandomInt(-10, 10),
-                radius: GameConfig.FOOD_RADIUS,
-                color: getRandomColor(GameConfig.FOOD_COLORS),
-            });
-        }
+        snake.score = 0; // Zera a pontuação DEPOIS de dropar a comida
         console.log(`${snake.name} colidiu com a borda e morreu.`);
     }
 }
 
-function checkSnakeCollisions(currentTime) {
-    const allSnakes = [GameState.playerSnake, ...GameState.rivals];
+function updateSpatialGrid() {
+    GameState.spatialGrid = {};
+    const allSnakes = [GameState.playerSnake, ...GameState.rivals].filter(s => s && s.isAlive);
+    for (const snake of allSnakes) {
+        for (const segment of snake.segments) {
+            const cellX = Math.floor(segment.x / GRID_SIZE);
+            const cellY = Math.floor(segment.y / GRID_SIZE);
+            const key = `${cellX},${cellY}`;
+            if (!GameState.spatialGrid[key]) GameState.spatialGrid[key] = [];
+            GameState.spatialGrid[key].push({snake, segment});
+        }
+    }
+}
 
+function getNearbySegments(x, y) {
+    const cellX = Math.floor(x / GRID_SIZE);
+    const cellY = Math.floor(y / GRID_SIZE);
+    let nearby = [];
+    for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+            const key = `${cellX + dx},${cellY + dy}`;
+            if (GameState.spatialGrid[key]) {
+                nearby = nearby.concat(GameState.spatialGrid[key]);
+            }
+        }
+    }
+    return nearby;
+}
+
+function checkSnakeCollisions(currentTime) {
+    updateSpatialGrid();
+    const allSnakes = [GameState.playerSnake, ...GameState.rivals];
     for (let i = 0; i < allSnakes.length; i++) {
         const snake = allSnakes[i];
         if (!snake || !snake.isAlive) continue;
+        if (performance.now() < (snake.spawnTime || 0) + 2000) continue;
         const head = snake.segments[0];
-
-        for (let j = 0; j < allSnakes.length; j++) {
-            if (i === j) continue;
-            const otherSnake = allSnakes[j];
-            if (!otherSnake || !otherSnake.isAlive) continue;
-
-            for (let k = 1; k < otherSnake.segments.length; k++) {
-                const segment = otherSnake.segments[k];
-                const dist = distance(head.x, head.y, segment.x, segment.y);
-                if (dist < snake.radius + otherSnake.radius) {
+        // Broad phase: só compara com segmentos próximos
+        const possibles = getNearbySegments(head.x, head.y);
+        for (const {snake: otherSnake, segment} of possibles) {
+            if (otherSnake === snake) continue;
+            // Narrow phase: colisão de círculo
+            const dx = head.x - segment.x;
+            const dy = head.y - segment.y;
+            const rSum = snake.radius + otherSnake.radius;
+            if ((dx*dx + dy*dy) < rSum*rSum) {
+                // Imunidade
+                const now = performance.now();
+                const snakeImmune = now < (snake.spawnTime || 0) + 2000;
+                const otherImmune = now < (otherSnake.spawnTime || 0) + 2000;
+                if (!snakeImmune && !otherImmune) {
+                    dropFoodOnDeath(snake);
+                    // Salva score antes de zerar
+                    if (snake === GameState.playerSnake) snake.lastScoreBeforeDeath = snake.score;
                     snake.isAlive = false;
                     snake.deathTime = currentTime;
                     snake.score = 0;
-                    for (let m = 1; m < snake.segments.length; m += Math.floor(snake.segments.length / 3)) {
-                        const seg = snake.segments[m];
-                        GameState.food.push({
-                            x: seg.x + getRandomInt(-10, 10),
-                            y: seg.y + getRandomInt(-10, 10),
-                            radius: GameConfig.FOOD_RADIUS,
-                            color: getRandomColor(GameConfig.FOOD_COLORS),
-                        });
-                    }
-                    console.log(`${snake.name} colidiu com outra cobra e morreu.`);
                     break;
                 }
             }
         }
+    }
+}
+
+function dropFoodOnDeath(snake) {
+    const foodToDrop = Math.max(0, Math.floor(snake.score / 2));
+    console.log(`${snake.name} morreu com ${snake.score} pontos, dropando ${foodToDrop} comidas.`);
+    if (foodToDrop === 0 || snake.segments.length <= 1) return;
+
+    for (let i = 0; i < foodToDrop; i++) {
+        // Escolhe um segmento aleatório (exceto a cabeça) para dropar a comida perto dele
+        const segmentIndex = getRandomInt(1, snake.segments.length - 1);
+        const segment = snake.segments[segmentIndex];
+        // Adiciona um pequeno offset aleatório para espalhar a comida
+        const offsetX = getRandomInt(-GameConfig.SNAKE_SEGMENT_RADIUS * 2, GameConfig.SNAKE_SEGMENT_RADIUS * 2);
+        const offsetY = getRandomInt(-GameConfig.SNAKE_SEGMENT_RADIUS * 2, GameConfig.SNAKE_SEGMENT_RADIUS * 2);
+        GameState.food.push({
+            x: segment.x + offsetX,
+            y: segment.y + offsetY,
+            radius: GameConfig.FOOD_RADIUS,
+            color: getRandomColor(GameConfig.FOOD_COLORS),
+        });
     }
 }
 
@@ -364,8 +465,35 @@ function update(deltaTime) {
 
     [GameState.playerSnake, ...GameState.rivals].forEach(snake => {
         if (snake && !snake.isAlive && snake.deathTime) {
+            // Só conta morte do jogador humano
+            if (snake === GameState.playerSnake && !snake.countedDeath) {
+                GameState.playerDeathCount = (GameState.playerDeathCount || 0) + 1;
+                snake.countedDeath = true;
+                // Salva a pontuação ANTES de resetar
+                if (typeof snake.lastScoreBeforeDeath !== 'number') {
+                    snake.lastScoreBeforeDeath = snake.score;
+                }
+                // Sempre salva o placar ao morrer
+                tentarAdicionarPlacar(snake.name, snake.lastScoreBeforeDeath || 0);
+                carregarPlacares();
+                // Se atingiu 2 mortes, volta ao lobby
+                if (GameState.playerDeathCount % 2 === 0) {
+                    // Pausa o jogo
+                    GameState.isRunning = false;
+                    // Mostra o painel inicial/lobby
+                    const startPanel = document.getElementById('startPanel');
+                    if (startPanel) startPanel.classList.remove('hidden');
+                    // Resetar mortes para o próximo ciclo
+                    GameState.playerDeathCount = 0;
+                }
+            }
             if (currentTime - snake.deathTime >= GameConfig.RESPAWN_DELAY) {
                 respawnSnake(snake);
+                // Reset flag para próxima morte
+                if (snake === GameState.playerSnake) {
+                    snake.countedDeath = false;
+                    snake.lastScoreBeforeDeath = undefined;
+                }
             }
         }
     });
@@ -412,10 +540,12 @@ function renderFood() {
     });
 }
 
-function renderSnake(snake, isPlayer = false) {
+function renderSnake(snake, currentTimeMs, isPlayer = false) {
     if (!ctx || !snake || !snake.isAlive) return;
-    ctx.fillStyle = snake.color;
-    ctx.strokeStyle = '#000000';
+    const elapsed = currentTimeMs - (snake.spawnTime || 0);
+    const displayColor = elapsed < 2000 ? '#808080' : snake.color;
+    ctx.fillStyle = displayColor;
+    ctx.strokeStyle = displayColor;
     ctx.lineWidth = 1 / GameState.camera.zoom;
 
     for (let i = snake.segments.length - 1; i >= 0; i--) {
@@ -482,27 +612,68 @@ function renderUI() {
     if (!ctx) return;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.font = '16px "Press Start 2P"';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2;
-    ctx.fillRect(canvas.width - 250, 10, 240, 10 + (GameConfig.RIVAL_COUNT + 1) * 20);
-    ctx.strokeRect(canvas.width - 250, 10, 240, 10 + (GameConfig.RIVAL_COUNT + 1) * 20);
-
-    const allSnakes = [GameState.playerSnake, ...GameState.rivals].filter(snake => snake);
+    // Dados do placar
+    const playerSnake = GameState.playerSnake;
+    const allSnakes = [playerSnake, ...GameState.rivals].filter(snake => snake);
     allSnakes.sort((a, b) => b.score - a.score);
-    allSnakes.forEach((snake, index) => {
-        ctx.fillStyle = snake.color;
-        ctx.fillText(`${snake.name}: ${snake.score}`, canvas.width - 240, 20 + index * 20);
-    });
+    let playerRank = -1;
+    if (playerSnake) {
+        playerRank = allSnakes.findIndex(snake => snake.id === playerSnake.id) + 1;
+    }
+    const topSnakes = allSnakes.slice(0, 9); // Mostra até 9 como Worms.Zone
+    const showPlayerSeparately = playerRank > 9 && playerSnake;
 
+    // Layout estilo Worms.Zone
+    const panelX = 20;
+    const panelY = 20;
+    const panelWidth = 180; // painel mais estreito
+    const lineHeight = 22;
+    const title = `Melhores jogadores`;
+    const displayCount = topSnakes.length + (showPlayerSeparately ? 1 : 0);
+    const scoreboardHeight = 10 + displayCount * lineHeight + 22;
+
+    // Painel de fundo totalmente transparente
+    // ctx.globalAlpha = 0.8;
+    // ctx.fillStyle = "#181f2a";
+    // ctx.fillRect(panelX, panelY, panelWidth, scoreboardHeight);
+    // ctx.globalAlpha = 1.0;
+
+    // Título
+    ctx.font = 'bold 14px Arial';
+    ctx.fillStyle = "#b0c4de";
+    ctx.textAlign = "left";
+    ctx.fillText(title, panelX + 6, panelY + 18);
+
+    // Lista
+    ctx.font = '14px Arial';
+    let yOffset = panelY + 36;
+    topSnakes.forEach((snake, idx) => {
+        ctx.textAlign = "left";
+        ctx.fillStyle = (snake.name === "NEGODRAMA") ? "#ffe066" : "#fff";
+        // Nomes mais próximos da pontuação
+        ctx.fillText(`${idx + 1}. ${snake.name}`, panelX + 6, yOffset);
+
+        ctx.textAlign = "right";
+        ctx.fillStyle = (snake.name === "NEGODRAMA") ? "#ffe066" : "#fff";
+        ctx.fillText(snake.score, panelX + panelWidth - 6, yOffset);
+
+        yOffset += lineHeight;
+    });
+    // Jogador fora do top
+    if (showPlayerSeparately) {
+        ctx.textAlign = "left";
+        ctx.fillStyle = (playerSnake.name === "NEGODRAMA") ? "#ffe066" : "#fff";
+        ctx.fillText(`${playerRank}. ${playerSnake.name}`, panelX + 10, yOffset);
+
+        ctx.textAlign = "right";
+        ctx.fillStyle = (playerSnake.name === "NEGODRAMA") ? "#ffe066" : "#fff";
+        ctx.fillText(playerSnake.score, panelX + panelWidth - 10, yOffset);
+    }
     ctx.restore();
 }
 
-function render() {
+function render(currentTimeMs) {
     if (!ctx || !canvas) {
         console.warn('Renderização cancelada: canvas ou contexto não disponíveis.');
         return;
@@ -520,14 +691,8 @@ function render() {
 
     renderWorldBackground();
     renderFood();
-    GameState.rivals.forEach(rival => {
-        console.log(`Renderizando rival ${rival.name}`);
-        renderSnake(rival);
-    });
-    if (GameState.playerSnake) {
-        console.log('Renderizando jogador');
-        renderSnake(GameState.playerSnake, true);
-    }
+    GameState.rivals.forEach(rival => renderSnake(rival, currentTimeMs));
+    if (GameState.playerSnake) renderSnake(GameState.playerSnake, currentTimeMs, true);
     renderWorldBounds();
 
     ctx.restore();
@@ -535,6 +700,69 @@ function render() {
     renderUI();
     console.log('Renderização concluída.');
 }
+
+// =================== HIGH SCORE SYSTEM ===================
+function carregarPlacares() {
+    const str = localStorage.getItem(HIGH_SCORES_KEY);
+    if (str) {
+        try {
+            const arr = JSON.parse(str);
+            highScores = Array.isArray(arr) ? arr.map(e => ({
+                name: e.name,
+                score: parseInt(e.score, 10) || 0
+            })) : [];
+        } catch (e) {
+            highScores = [];
+        }
+    } else {
+        highScores = [];
+    }
+    exibirPlacares();
+}
+
+function salvarPlacares() {
+    localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(highScores));
+}
+
+function tentarAdicionarPlacar(nome, pontuacaoFinal) {
+    if (typeof nome !== 'string' || !nome.trim()) return false;
+    nome = nome.trim();
+    pontuacaoFinal = parseInt(pontuacaoFinal, 10) || 0;
+    let updated = false;
+    if (highScores.length < 3 || pontuacaoFinal > highScores[highScores.length - 1].score) {
+        highScores.push({ name: nome, score: pontuacaoFinal });
+        highScores.sort((a, b) => b.score - a.score);
+        highScores = highScores.slice(0, 3);
+        salvarPlacares();
+        exibirPlacares();
+        updated = true;
+    }
+    return updated;
+}
+
+function exibirPlacares() {
+    const list = document.getElementById('highScoresList');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!highScores.length) {
+        const li = document.createElement('li');
+        li.textContent = 'Nenhum placar registrado ainda.';
+        list.appendChild(li);
+        return;
+    }
+    highScores.forEach((entry, idx) => {
+        const li = document.createElement('li');
+        li.textContent = `${idx + 1}º - ${entry.name}: ${entry.score}`;
+        list.appendChild(li);
+    });
+}
+
+// Chame carregarPlacares() ao iniciar o jogo ou mostrar a tela de placares
+// Chame tentarAdicionarPlacar(nome, score) ao final da partida
+
+document.addEventListener('DOMContentLoaded', () => {
+    carregarPlacares();
+});
 
 // Loop principal
 function gameLoop(timestamp) {
@@ -548,7 +776,7 @@ function gameLoop(timestamp) {
     GameState.lastTimestamp = timestamp;
 
     update(deltaTime);
-    render();
+    render(timestamp);
 
     requestAnimationFrame(gameLoop);
 }
@@ -607,12 +835,28 @@ function setupStartPanel() {
         startPanel.classList.add('hidden');
         createPlayerSnake(playerName, selectedColor);
         createFood(GameConfig.INITIAL_FOOD_COUNT);
-        for (let i = 0; i < GameConfig.RIVAL_COUNT; i++) {
-            GameState.rivals.push(createSnake(false));
-        }
+        createRivals();
+        GameState.playerDeathCount = 0; // Resetar mortes ao iniciar/reiniciar
         console.log(`Estado inicial: Jogador=${!!GameState.playerSnake}, Rivais=${GameState.rivals.length}, Comidas=${GameState.food.length}`);
         GameState.lastTimestamp = performance.now();
+        GameState.isRunning = true;
         requestAnimationFrame(gameLoop);
+    });
+}
+
+// Event listener para o botão de tela cheia
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Erro ao tentar entrar em tela cheia: ${err.message} (${err.name})`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
     });
 }
 
