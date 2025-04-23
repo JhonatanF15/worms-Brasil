@@ -1,219 +1,480 @@
-/* Estilos gerais do jogo */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap');
+/* Reset básico de estilos */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #222;
-    font-family: 'Orbitron', 'Press Start 2P', cursive;
+    background: #000; /* Fundo preto */
+    font-family: Arial, sans-serif; /* Fonte padrão */
+    overflow: hidden; /* Esconde barras de scroll */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
+/* Estilo para o canvas do jogo */
 #gameCanvas {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-    border: 2px solid white; /* Borda para depuração, pode ser removida */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
 }
 
-/* Estilos do painel inicial */
-.high-scores-panel {
-    background: rgba(255,255,255,0.10);
-    border: 2px solid #00ffff;
+/* Estilo base para todos os painéis (Inicial e Personalização) */
+.panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 2.5rem; /* Padding aumentado para melhor espaçamento interno */
     border-radius: 10px;
-    margin-bottom: 1.5rem;
-    padding: 1.2rem 0.6rem 1.2rem 0.6rem;
-    color: #fff;
-    box-shadow: 0 0 8px #00ffff44;
+    color: white;
+    text-align: center;
+    z-index: 1000;
+    min-width: 300px;
+    max-width: 90%;
+    max-height: 90vh; /* Altura máxima para telas menores (manteremos para controle, mas ajustaremos o conteúdo) */
+    overflow-y: auto; /* Adiciona scroll APENAS se o conteúdo for MAIOR que a max-height */
+
+    /* Fundo animado com brilho pulsante aprimorado */
+    animation: pulse-glow 3s infinite alternate ease-in-out; /* Ajustado duração e timing function */
 }
 
-.high-scores-panel h2 {
-    color: #00ffff;
-    font-size: 1.2rem;
-    margin-bottom: 0.7rem;
-    text-shadow: 0 0 8px #00ffff99;
+/* Animação para o brilho pulsante aprimorado do painel */
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 10px rgba(74, 144, 226, 0.6);
+        border: 1px solid rgba(74, 144, 226, 0.3); /* Borda sutil */
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(74, 144, 226, 1), 0 0 40px rgba(74, 144, 226, 0.8), 0 0 60px rgba(74, 144, 226, 0.5); /* Brilho mais intenso e em camadas */
+        border: 1px solid rgba(74, 144, 226, 0.6); /* Borda mais visível */
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(74, 144, 226, 0.6);
+        border: 1px solid rgba(74, 144, 226, 0.3); /* Volta ao estado inicial */
+    }
 }
 
-.high-scores-panel ol {
-    list-style: decimal inside;
-    margin: 0;
-    padding: 0;
-    color: #fff;
-    font-family: 'Press Start 2P', 'Orbitron', monospace;
-    font-size: 1rem;
+
+/* Títulos dentro dos painéis com brilho neon aprimorado */
+.panel h1 {
+    color: #ffe066;
+    margin-bottom: 0.5rem;
+    font-size: 2.8rem; /* Tamanho um pouco maior */
+    /* Brilho neon dourado/laranja */
+    text-shadow: 0 0 8px #ffe066, 0 0 15px #ffcc00, 0 0 20px #ff8c00, 0 0 25px #ff4500;
 }
 
-.high-scores-panel li {
-    color: #fff;
-    background: rgba(0,0,0,0.35);
-    margin: 0.2em 0;
-    padding: 0.3em 0.7em;
-    border-radius: 6px;
-    text-shadow: 0 1px 2px #000;
-    letter-spacing: 1px;
+.panel h2 {
+    color: #ffe066;
+    margin-top: 2rem; /* Mais espaço acima dos títulos secundários */
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    /* Brilho neon dourado/laranja sutil */
+    text-shadow: 0 0 5px #ffe066, 0 0 10px #ffcc00;
 }
 
-.start-panel {
+/* Estilo para a legenda abaixo do título */
+.subtitle {
+    color: #b0c4de;
+    font-size: 1.1rem; /* Tamanho um pouco maior */
+    margin-bottom: 2rem; /* Mais espaço abaixo da legenda */
+}
+
+.form-group {
+    margin: 1.5rem 0; /* Mais espaço vertical */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.6rem; /* Mais espaço abaixo do label */
+    color: #b0c4de;
+}
+
+/* Container para alinhar o avatar e o input */
+.input-with-avatar {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Mais espaço entre avatar e input */
+    width: 100%;
+    justify-content: center;
+}
+
+/* Estilo para o placeholder do avatar circular neon aprimorado */
+.avatar-placeholder {
+    width: 45px; /* Tamanho um pouco maior */
+    height: 45px;
+    border-radius: 50%;
+    border: 3px solid #00ffff; /* Borda um pouco mais grossa */
+    /* Brilho neon ciano aprimorado */
+    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff inset;
+    background-color: rgba(0, 255, 255, 0.15); /* Fundo mais visível */
+    flex-shrink: 0;
+}
+
+
+input[type="text"] {
+    width: 70%;
+    padding: 0.6rem; /* Padding um pouco maior */
+    font-size: 1.1rem; /* Fonte um pouco maior */
+    border: 2px solid #4a5568;
+    border-radius: 5px;
+    background: #2d3748;
+    color: white;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus {
+    border-color: #00ffff;
+    box-shadow: 0 0 8px #00ffff, 0 0 12px #00ffff inset; /* Brilho neon mais intenso no foco */
+    outline: none;
+}
+
+/* Container geral para os botões de cor */
+.color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem; /* Mais espaço entre os botões */
+    justify-content: center;
+    margin-top: 1rem; /* Mais espaço acima do picker */
+}
+
+/* Estilo base para os botões de cor */
+.color-btn {
+    width: 45px; /* Tamanho aprimorado */
+    height: 45px;
+    border: 3px solid white; /* Borda um pouco mais grossa */
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out, opacity 0.3s ease-in-out, filter 0.3s ease-in-out;
+    position: relative;
+}
+
+/* Estilo para botões de cor selecionados (apenas no painel inicial para a lógica original) */
+.color-btn.selected {
+     transform: scale(1.3); /* Aumenta um pouco mais ao selecionar */
+     box-shadow: 0 0 10px white, 0 0 15px white inset; /* Sombra branca mais visível */
+     opacity: 1;
+     filter: none;
+     border-color: white;
+}
+
+/* Estilo para botões de cor BLOQUEADOS aprimorado */
+.color-btn.locked {
+    opacity: 0.4; /* Reduz mais a opacidade */
+    filter: grayscale(100%); /* Deixa totalmente cinza */
+    cursor: not-allowed;
+    pointer-events: auto;
+    border-color: #333; /* Borda bem escura para bloqueados */
+}
+
+/* Ícone de cadeado para botões bloqueados aprimorado */
+.color-btn.locked::after {
+    content: '🔒';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 3rem;
-    border-radius: 15px;
-    border: 3px solid #555;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-    text-align: center;
-    width: 90%;
-    max-width: 500px;
-    font-family: 'Orbitron', sans-serif; /* Fonte específica para o painel */
+    color: rgba(255, 255, 255, 0.9); /* Cor branca quase sólida */
+    font-size: 1.5rem; /* Cadeado maior */
+    text-shadow: 0 0 5px #000; /* Sombra preta para destacar */
 }
 
-.start-panel h1 {
-    font-size: 2.5rem;
-    color: #00ffff; /* Azul Ciano Neon */
-    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-    margin-bottom: 1.5rem;
-    font-family: 'Orbitron', cursive; /* Manter Orbitron */
+
+/* Estilo para botões de cor disponíveis (em qualquer painel) */
+.color-btn.available {
+     opacity: 1;
+     filter: none;
+     cursor: pointer;
+     border-color: white;
 }
 
-.start-panel label {
-    font-size: 16px;
-    margin-bottom: 10px;
-    font-family: 'Orbitron', sans-serif; /* Manter Orbitron */
-    color: #bbb; /* Cor cinza claro para o label */
+/* Efeito neon para botões de cor disponíveis ao passar o mouse ou serem selecionados aprimorado */
+.color-btn.available:hover,
+.color-btn.available.selected {
+    transform: scale(1.3);
+    /* Brilho neon ciano/rosa */
+    border-color: #00ffff;
+    box-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff, 0 0 30px #00ffff;
 }
 
-.start-panel input {
-    font-family: 'Orbitron', cursive;
-    font-size: 14px;
-    padding: 10px;
-    width: 200px;
-    margin-bottom: 20px;
-    background-color: #333;
-    border: 2px solid white;
-    text-align: center;
-}
 
-.start-panel p {
-    font-size: 16px;
-    margin-bottom: 10px;
-    color: #fff !important;
-    text-shadow: 0 1px 2px #000;
-}
-
-.color-options {
-    display: flex;
-    justify-content: center; /* Centralizar botões */
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.color-btn {
-    width: 40px;
-    height: 40px;
-    border: 2px solid white;
+/* Estilo para o botão de iniciar aprimorado */
+.start-btn {
+    background: #2b6cb0;
+    color: white;
+    border: none;
+    padding: 1.2rem 2.5rem; /* Padding maior */
+    font-size: 1.2rem; /* Fonte maior */
+    border-radius: 5px;
     cursor: pointer;
-    transition: transform 0.2s;
+    margin-top: 2rem; /* Mais espaço acima */
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    /* Efeito neon inicial sutil */
+    box-shadow: 0 0 5px rgba(43, 108, 176, 0.5);
 }
 
-.color-btn:hover {
-    transform: scale(1.1);
+/* Estilo neon para o botão de iniciar ao passar o mouse aprimorado */
+.start-btn:hover {
+    background: #2c5282;
+    /* Brilho neon ciano/azul intenso */
+    box-shadow: 0 0 12px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff inset;
 }
 
-.color-btn.selected {
-    border-color: yellow;
-}
-
-#startButton {
-    font-family: 'Orbitron', cursive;
-    font-size: 22px;
-    padding: 16px 36px;
-    background-color: #00FF00;
-    color: #111;
-    border: 3px solid #00ffff;
-    border-radius: 10px;
+/* Estilo para o botão discreto de ícone (abrir personalização) aprimorado */
+.icon-btn {
+    background: none;
+    border: none;
+    color: #00ffff; /* Cor neon padrão */
+    font-size: 1.8rem; /* Tamanho maior */
     cursor: pointer;
-    box-shadow: 0 0 16px #00ffb3, 0 0 4px #fff;
-    text-shadow: 0 2px 10px #00ffb3, 0 1px 2px #fff;
-    font-weight: bold;
-    letter-spacing: 2px;
-    transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    outline: none;
+    position: absolute;
+    top: 20px; /* Ajuste a posição */
+    right: 20px; /* Ajuste a posição */
+    transition: color 0.3s ease, transform 0.3s ease, text-shadow 0.3s ease;
+    z-index: 1001;
+    /* Brilho sutil padrão */
+    text-shadow: 0 0 5px #00ffff;
 }
 
-#startButton:hover, #startButton:focus {
-    background-color: #00ffb3;
-    color: #111;
-    box-shadow: 0 0 32px #00ffff, 0 0 10px #fff;
-    transform: scale(1.07);
-    animation: pulseStartBtn 0.7s infinite alternate;
+.icon-btn:hover {
+    color: #fff; /* Cor branca no hover */
+    /* Brilho neon mais forte no hover */
+    text-shadow: 0 0 10px #00ffff, 0 0 15px #00ffff, 0 0 20px #00ffff;
+    transform: scale(1.2);
 }
 
-@keyframes pulseStartBtn {
-    0% { box-shadow: 0 0 16px #00ffb3, 0 0 4px #fff; }
-    100% { box-shadow: 0 0 32px #00ffff, 0 0 16px #fff; }
+
+/* Seção de Melhores Pontuações aprimorada */
+.high-scores {
+    margin-top: 3rem; /* Mais espaço acima */
+    padding-top: 2rem; /* Mais espaço interno acima da borda */
+    border-top: 2px solid #4a5568; /* Borda mais grossa */
+    /* Opcional: Fundo sutil */
+    /* background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding-bottom: 1.5rem; */
 }
 
-#startButton:hover {
-    background-color: #00CC00;
+.high-scores h2 {
+     /* Já estilizado acima com h2 */
 }
 
+#highScoresList {
+    list-style: none;
+    color: #b0c4de;
+    padding: 0;
+}
+
+#highScoresList li {
+    margin: 0.4rem 0; /* Mais espaço entre itens */
+    font-size: 1.1rem; /* Fonte um pouco maior */
+}
+
+
+/* Estilos específicos para o Painel de Personalização */
+#customizationPanel {
+    /* Estilos base já vêm de .panel */
+}
+
+#customizationPanel .subtitle {
+    margin-bottom: 1.5rem; /* Ajuste o espaço da legenda neste painel se necessário */
+}
+
+
+/* Estilo para a seção da Loja dentro do painel de personalização aprimorada */
+.store {
+    margin-top: 2.5rem; /* Espaço acima da loja */
+    padding-top: 2rem; /* Espaço interno acima da borda */
+    border-top: 2px solid #4a5568; /* Borda mais grossa */
+    /* Fundo levemente diferente para destacar a loja */
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 2rem; /* Padding interno na loja */
+    margin-bottom: 1rem; /* Espaço abaixo da seção da loja */
+}
+
+.store h3 {
+    color: #ffe066;
+    margin-bottom: 0.8rem; /* Espaço abaixo do título da loja */
+    font-size: 1.7rem; /* Tamanho maior */
+     text-shadow: 0 0 5px #ffe066; /* Brilho sutil */
+}
+
+.store .subtitle {
+    margin-bottom: 1.5rem; /* Espaço abaixo da legenda da loja */
+    font-size: 1rem;
+    color: #b0c4de;
+}
+
+/* Estilo para a lista de cores na loja */
+.store-color-list {
+    margin-top: 1.5rem; /* Mais espaço acima da lista de cores */
+}
+
+/* Estilo para o botão de fechar o painel aprimorado */
+.close-btn {
+    background: #c53030;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.8rem; /* Padding maior */
+    font-size: 1.1rem; /* Fonte maior */
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 2.5rem; /* Mais espaço acima */
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.close-btn:hover {
+    background: #9b2c2c;
+     box-shadow: 0 0 10px rgba(197, 48, 48, 0.8), 0 0 15px rgba(197, 48, 48, 0.6) inset; /* Sombra vermelha mais intensa */
+}
+
+
+/* Botão Fullscreen aprimorado */
+#fullscreenBtn {
+    position: fixed;
+    top: 15px; /* Ajuste a posição */
+    right: 15px; /* Ajuste a posição */
+    background: rgba(255, 255, 255, 0.15); /* Fundo mais sutil */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Borda sutil */
+    color: white;
+    padding: 6px 12px; /* Padding ajustado */
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+    backdrop-filter: blur(6px); /* Desfoque um pouco maior */
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+#fullscreenBtn:hover {
+    background: rgba(255, 255, 255, 0.25); /* Fundo um pouco mais visível no hover */
+    border-color: rgba(255, 255, 255, 0.4); /* Borda mais visível no hover */
+}
+
+/* Classe para esconder elementos (usada por JavaScript) */
 .hidden {
     display: none;
 }
 
-/* Cor específica para o input de nome */
-#playerName {
-    color: #fff !important; /* Forçar a cor branca */
-}
+/* Media Queries para Responsividade - OTIMIZADO PARA VERTICAL EM TELAS PEQUENAS */
+@media (max-width: 600px) {
+    .panel {
+        padding: 1rem; /* Reduz MUITO o padding do painel em telas pequenas */
+         max-height: 95vh; /* Permitir que use um pouco mais da altura vertical */
+    }
 
-/* Estilo para o placeholder */
-#playerName::placeholder {
-    color: #bbb; /* Cor cinza claro para o placeholder */
-    opacity: 1; /* Garante que a cor seja visível em alguns navegadores */
-}
+    .panel h1 {
+        font-size: 2rem; /* Reduzir tamanho do título principal */
+         margin-bottom: 0.3rem;
+    }
 
-/* Estilos para o botão de tela cheia */
-.fullscreen-button {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: 1px solid white;
-    border-radius: 5px;
-    padding: 5px 10px;
-    font-size: 20px;
-    cursor: pointer;
-    z-index: 100; /* Garante que fique sobre o canvas */
-    transition: background-color 0.2s;
-}
+    .panel h2 {
+        font-size: 1.5rem; /* Reduzir tamanho dos títulos secundários */
+        margin-top: 1rem; /* Reduz espaço acima */
+        margin-bottom: 0.8rem; /* Reduz espaço abaixo */
+    }
 
-.fullscreen-button:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-}
+    .subtitle {
+        font-size: 0.9rem; /* Fonte menor */
+        margin-bottom: 1rem; /* Reduz espaço abaixo */
+    }
 
-/* Estilo para os textos do placar */
-.score-text {
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    font-weight: bold;
-    letter-spacing: 1px;
-}
+    .form-group {
+        margin: 0.8rem 0; /* Reduz espaço vertical */
+    }
 
-/* Efeito de destaque para o jogador */
-.player-score {
-    text-shadow: 0 0 10px currentColor;
-    font-size: 1.1em;
-}
+    label {
+        margin-bottom: 0.3rem; /* Reduz espaço abaixo do label */
+        font-size: 0.9rem; /* Fonte menor */
+    }
 
-/* Container do placar (opcional) */
-.score-container {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-    padding: 10px;
-    border-radius: 5px;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
+    .input-with-avatar {
+        flex-direction: row; /* Manter lado a lado, se couber */
+        justify-content: center;
+        flex-wrap: wrap; /* Permitir quebra se necessário */
+        gap: 8px; /* Espaço menor */
+    }
+
+    .avatar-placeholder {
+         width: 35px; /* Reduz tamanho */
+         height: 35px;
+         border-width: 2px; /* Borda mais fina */
+    }
+
+    input[type="text"] {
+        width: 85%; /* Ajustar largura do input */
+        font-size: 0.9rem; /* Fonte menor */
+        padding: 0.4rem; /* Padding menor */
+    }
+
+    .color-picker {
+        gap: 0.4rem; /* Espaço menor */
+        margin-top: 0.6rem; /* Espaço menor */
+    }
+
+    .color-picker .color-btn {
+        width: 32px; /* Reduz tamanho dos botões de cor */
+        height: 32px;
+         border-width: 2px; /* Borda mais fina */
+    }
+
+     .color-btn.locked::after {
+        font-size: 1.1rem; /* Cadeado menor */
+    }
+
+
+    .icon-btn {
+        font-size: 1.4rem; /* Tamanho menor */
+        top: 10px;
+        right: 10px;
+    }
+
+    .start-btn, .close-btn {
+        padding: 0.8rem 1.5rem; /* Reduzir padding dos botões principais */
+        font-size: 1rem;
+        margin-top: 1.5rem; /* Reduz espaço acima */
+    }
+
+    .high-scores, .store {
+        margin-top: 1.8rem; /* Reduz espaço acima */
+        padding-top: 1rem; /* Reduz espaço interno */
+        border-width: 1px; /* Borda mais fina */
+    }
+
+    .store {
+         padding: 1rem; /* Reduz padding interno da loja */
+         margin-bottom: 0.8rem; /* Reduz espaço abaixo */
+    }
+
+    .store h3 {
+        font-size: 1.3rem; /* Tamanho menor */
+        margin-bottom: 0.5rem;
+    }
+
+    .store .subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+     #highScoresList li {
+        font-size: 0.9rem; /* Fonte menor */
+        margin: 0.2rem 0; /* Espaço menor */
+     }
+
+     #fullscreenBtn {
+         top: 8px;
+         right: 8px;
+         padding: 4px 8px;
+     }
 }
