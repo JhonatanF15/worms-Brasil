@@ -3,37 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WARZONE BRASIL</title>
+    <title>Worms Brasil</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Fonte pixelada para o contador e painel -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-</head>
+    </head>
 <body>
-    <div id="startPanel" class="start-panel">
-        <h1>WARZONE BRASIL</h1>
-        <div id="highScoresPanel" class="high-scores-panel">
-            <h2>TOP 3 PLACARES</h2>
-            <ol id="highScoresList"></ol>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="startPanel" class="panel">
+        <h1>Worms Brasil</h1>
+        <p class="subtitle">Entre na arena</p>
+
+        <div class="form-group">
+            <label for="playerName">Seu Nome:</label>
+            <div class="input-with-avatar">
+                <div class="avatar-placeholder"></div>
+                <input type="text" id="playerName" placeholder="Digite seu nome" maxlength="15">
+            </div>
         </div>
-        <form id="startForm" autocomplete="off" onsubmit="return false;">
-            <div class="form-group">
-                <label for="playerName">NOME:</label>
-                <input type="text" id="playerName" maxlength="15" placeholder="Sobrevivente" autocomplete="off">
-            </div>
-            <p>Escolha a Cor:</p>
-            <div class="color-options">
-                <button class="color-btn" data-color="#00FF00" style="background-color: #00FF00;"></button>
-                <button class="color-btn" data-color="#FF0000" style="background-color: #FF0000;"></button>
-                <button class="color-btn" data-color="#0000FF" style="background-color: #0000FF;"></button>
-                <button class="color-btn" data-color="#FFFF00" style="background-color: #FFFF00;"></button>
-                <button class="color-btn" data-color="#FF00FF" style="background-color: #FF00FF;"></button>
-                <button class="color-btn" data-color="#00FFFF" style="background-color: #00FFFF;"></button>
-            </div>
-            <button id="startButton">Iniciar Jogo</button>
-        </form>
+
+        <div class="form-group">
+            <label>Cor da Cobra:</label>
+            <div class="color-picker">
+                <button class="color-btn selected available" data-color="#FF0000" style="background-color: #FF0000;"></button>
+                <button class="color-btn locked" data-color="#00FF00" style="background-color: #00FF00;"></button> <button class="color-btn locked" data-color="#0000FF" style="background-color: #0000FF;"></button> <button class="color-btn locked" data-color="#FFFF00" style="background-color: #FFFF00;"></button> <button class="color-btn locked" data-color="#FF00FF" style="background-color: #FF00FF;"></button> </div>
+        </div>
+
+        <button id="startButton" class="start-btn">Iniciar Jogo</button>
+
+        <button id="openCustomizationBtn" class="icon-btn">🎨</button>
+
+        <div class="high-scores">
+            <h2>Melhores Pontuações</h2>
+            <ul id="highScoresList">
+                </ul>
+        </div>
     </div>
-    <canvas id="gameCanvas" tabindex="0"></canvas>
-    <button id="fullscreenBtn" class="fullscreen-button" aria-label="Tela Cheia">&#x26F6;</button> <!-- Botão de Tela Cheia -->
-    <script src="script.js" defer></script>
+
+    <div id="customizationPanel" class="panel hidden">
+        <h2>Personalização</h2>
+        <p class="subtitle">Escolha sua cor (ou desbloqueie mais!)</p>
+
+        <div class="customization-color-picker color-picker">
+             <label>Cores Disponíveis:</label>
+            <button class="color-btn available" data-color="#FF0000" style="background-color: #FF0000;"></button>
+            <button class="color-btn locked" data-color="#00FF00" style="background-color: #00FF00;"></button>
+            <button class="color-btn available" data-color="#0000FF" style="background-color: #0000FF;"></button>
+             <button class="color-btn locked" data-color="#FFFF00" style="background-color: #FFFF00;"></button>
+             <button class="color-btn locked" data-color="#FF00FF" style="background-color: #FF00FF;"></button>
+            </div>
+
+        <div class="store">
+            <h3>Loja de Cores</h3>
+            <p class="subtitle">Desbloqueie novas cores aqui!</p>
+            <div class="store-color-list color-picker">
+                <label>Cores na Loja:</label>
+                <button class="color-btn locked" data-color="#FF0000" style="background-color: #FF0000;"></button>
+                 <button class="color-btn locked" data-color="#00FF00" style="background-color: #00FF00;"></button>
+                 <button class="color-btn locked" data-color="#0000FF" style="background-color: #0000FF;"></button>
+                 <button class="color-btn locked" data-color="#FFFF00" style="background-color: #FFFF00;"></button>
+                 <button class="color-btn locked" data-color="#FF00FF" style="background-color: #FF00FF;"></button>
+                </div>
+        </div>
+
+        <button class="close-btn">Fechar</button>
+    </div>
+
+    <button id="fullscreenBtn">⛶</button>
+
+    <script>
+        // Comentário: Script para alternar a visibilidade dos painéis inicial e de personalização,
+        // e para bloquear/desbloquear a orientação da tela em dispositivos suportados QUANDO o modo tela cheia mudar.
+        // Ele NÃO INICIA o modo tela cheia - essa lógica deve estar no script.js
+
+        const startPanel = document.getElementById('startPanel');
+        const customizationPanel = document.getElementById('customizationPanel');
+        const openCustomizationBtn = document.getElementById('openCustomizationBtn');
+        // Seleciona o botão de fechar DENTRO do painel de personalização para evitar conflitos
+        const closeCustomizationBtn = customizationPanel ? customizationPanel.querySelector('.close-btn') : null; // Verifica se customizationPanel existe
+
+        // Seleciona todos os botões de cor bloqueados APENAS no painel inicial
+        const lockedColorBtnsStartPanel = startPanel ? startPanel.querySelectorAll('.color-btn.locked') : []; // Verifica se startPanel existe
+
+        // Função para mostrar um painel e esconder o outro
+        function showPanel(panelToShow) {
+            if (startPanel && customizationPanel) { // Verifica se os painéis existem
+                if (panelToShow === 'start') {
+                    startPanel.classList.remove('hidden');
+                    customizationPanel.classList.add('hidden');
+                } else if (panelToShow === 'customization') {
+                    startPanel.classList.add('hidden');
+                    customizationPanel.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Oculta o painel de personalização ao carregar a página (garante que o inicial apareça primeiro)
+        // Verifica se customizationPanel existe antes de adicionar a classe hidden
+        if (customizationPanel) {
+            customizationPanel.classList.add('hidden');
+        }
+
+
+        // Adicionar ouvintes de evento para alternar painéis (verificando se os elementos existem)
+
+        // Botão discreto no painel inicial abre personalização
+        if (openCustomizationBtn) {
+            openCustomizationBtn.addEventListener('click', () => {
+                showPanel('customization');
+            });
+        } else {
+            // console.error("Botão #openCustomizationBtn não encontrado!"); // Pode remover este erro se for ok que o botão não exista
+        }
+
+        // Botão de fechar no painel de personalização volta para o inicial
+         if (closeCustomizationBtn) {
+            closeCustomizationBtn.addEventListener('click', () => {
+                showPanel('start');
+            });
+        } else {
+             // console.error("Botão .close-btn no #customizationPanel não encontrado!"); // Pode remover este erro
+        }
+
+        // Clicar em um botão de cor bloqueado no painel inicial abre a personalização
+        lockedColorBtnsStartPanel.forEach(button => {
+            button.addEventListener('click', () => {
+                showPanel('customization');
+            });
+        });
+
+
+        // Lógica para REAGIR à mudança de estado de Tela Cheia e gerenciar Orientação
+        // Este listener é disparado quando o navegador ENTRA ou SAI do modo tela cheia
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) { // Entrou em tela cheia
+                console.log("Entrou em tela cheia. Tentando bloquear orientação...");
+                // Tenta bloquear a orientação para paisagem (horizontal)
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(err => {
+                        console.warn("Falha ao bloquear orientação para paisagem:", err);
+                        // O bloqueio pode falhar se não for suportado ou se houver restrições
+                    });
+                } else {
+                    console.warn("API de Orientação de Tela não suportada ou lock não disponível.");
+                }
+            } else { // Saiu de tela cheia
+                 console.log("Saiu de tela cheia. Desbloqueando orientação...");
+                 // Desbloqueia a orientação
+                 if (screen.orientation && screen.orientation.unlock) {
+                     screen.orientation.unlock();
+                 } else {
+                     console.warn("API de Orientação de Tela não suportada ou unlock não disponível.");
+                 }
+            }
+        });
+
+        // Comentário: A lógica para INICIAR ou SAIR do modo tela cheia
+        // deve permanecer no seu arquivo script.js, atrelada ao clique do #fullscreenBtn.
+        // A lógica de seleção de cor NO PAINEL DE PERSONALIZAÇÃO
+        // e a lógica de "desbloqueio" de cores na Loja também precisam estar no script.js.
+
+
+    </script>
+
+    <script src="script.js"></script>
 </body>
 </html>
