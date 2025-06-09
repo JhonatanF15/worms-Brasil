@@ -1,3 +1,12 @@
+**Desenvolvedor Front-end & Game Developer (w// CSS/HTML/JS)**  
+– Criação de jogo estilo “Snake” multiplayer no browser usando JavaScript e Canvas API.  
+– Estruturei `GameConfig` para parametrizar mundo (3000×3000), entidades (velocidade, crescimento, respawn) e UX (suavização de câmera).  
+– Desenvolvi IA básica para adversários e sistema dinâmico de spawn de itens.  
+– Organizei código em arquivos separados (HTML, CSS, JS) e utilizei Git/GitHub para versionamento.
+
+
+
+
 # Configurações Chave de Gameplay (em script.js)
 
 Estas são as configurações no objeto `GameConfig` (arquivo `script.js`) que você pode modificar para alterar significativamente a experiência de jogo.
