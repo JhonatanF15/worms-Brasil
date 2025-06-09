@@ -1,8 +1,40 @@
-**Desenvolvedor Front-end & Game Developer (w// CSS/HTML/JS)**  
-– Criação de jogo estilo “Snake” multiplayer no browser usando JavaScript e Canvas API.  
-– Estruturei `GameConfig` para parametrizar mundo (3000×3000), entidades (velocidade, crescimento, respawn) e UX (suavização de câmera).  
-– Desenvolvi IA básica para adversários e sistema dinâmico de spawn de itens.  
-– Organizei código em arquivos separados (HTML, CSS, JS) e utilizei Git/GitHub para versionamento.
+## 📁 Projeto
+
+### **Worms Brasil (jogo Snake multiplayer no browser)**
+**Tecnologias:** HTML5 • CSS3 • JavaScript (ES6+) • Canvas API • Git/GitHub
+
+- Estruturei o HTML semântico e otimizado para performance de jogo.
+- Modelei o mundo do jogo usando um objeto de configuração (`GameConfig`) para definir tamanho, velocidade, respawn e limites.
+- Desenvolvi o game loop em JavaScript com atualização e renderização contínuas no Canvas.
+- Implementei detecção de colisão entre segmentos de “cobra” e itens de comida.
+- Criei IA básica para cobras rivais com parâmetros independentes de velocidade e crescimento.
+- Ajustei parâmetros de câmera com suavização (`CAMERA_SMOOTHING`) para experiência fluida.
+- Versionei o projeto no GitHub, mantendo commits atômicos e documentação no README.
+
+---
+
+## 🧠 Habilidades Técnicas
+
+- **Linguagens & APIs:**  
+  - JavaScript (ES6+), Canvas API  
+  - HTML5 semântico, CSS3 para layout e estilização  
+
+- **Desenvolvimento de Jogos Web:**  
+  - Implementação de game loop (update/render)  
+  - Lógica de movimentação, colisão e respawn  
+  - IA básica para entidades controladas pelo sistema  
+
+- **Design de Arquitetura:**  
+  - Configuração orientada a dados (`GameConfig`)  
+  - Separação de responsabilidades entre lógica de jogo e renderização  
+
+- **Ferramentas & Versionamento:**  
+  - Git, GitHub (Commits, Branching, README)  
+  - Testes manuais cross-browser e otimização de performance  
+
+- **UX & Performance:**  
+  - Suavização de câmera e responsividade do canvas  
+  - Otimização de assets e parâmetros para carregamento rápido
 
 
 
